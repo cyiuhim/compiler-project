@@ -15,5 +15,5 @@ start @fly@
 flap a = 5. 
 ## equivalent to flap a to 5.
 a = 6.
-honk<<"a is: ", a>>
+honk<<"a is: ", a>>.
 end @fly@
