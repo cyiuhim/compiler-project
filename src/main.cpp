@@ -28,5 +28,13 @@ int main(int argc, char* argv[]) {
         text += '\n';
     }
     DFA dfa;
-    dfa.parse(text);
+    try {
+        dfa.parse(text);
+    }
+    catch (std::runtime_error& e) {
+        std::cerr << e.what() << std::endl;
+        return 2;
+    }
+    auto tokens = dfa.get_result();
+    
 }

@@ -6,7 +6,7 @@
 // implements maximal munch algorithm, converts text into tokens
 void DFA::parse(std::string text) {
     // TODO: implement maximal munch algorithm 
-    int idx = 0;
+    size_t idx = 0;
     // check for invalid characters first 
     for (char c : text) {
         if (alphabet.find(c) == alphabet.end()) {
@@ -14,8 +14,25 @@ void DFA::parse(std::string text) {
         }
     }
     while (idx < text.length()) {
-        
+        State* cur_state = start_state;
+        const size_t start_idx = idx;
+        std::pair<size_t, State*> backtrack = {-1, nullptr};
+        while (idx < text.length()) {
+            if (accepting_states.contains(cur_state)) {
+                backtrack = {idx, cur_state};
+            }
+            State* next_state = cur_state->get_next_state(text[idx]);
+            if (!next_state) break;
+            cur_state = next_state;
+            idx++;
+        } 
+        if (!backtrack.second) {
+            throw std::runtime_error("error parsing somewhere.");
+        }
+        TokenType token_type = accepting_states.at(cur_state);
+        tokens.emplace_back(token_type, text.substr(start_idx, idx - start_idx));
     }
+    process_identifiers();
 }
 
 void DFA::process_identifiers() {
