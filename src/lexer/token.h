@@ -2,8 +2,6 @@
 #define __TOKEN_H__
 
 enum TokenType {
-    START, // start
-    END, // end
     SOF, // start of file
     _EOF, // end of file
     IDENTIFIER, // any identifier
@@ -20,7 +18,9 @@ enum TokenType {
 
     // keywords
     FLAP, // flap (let)
-    HONK // honk
+    HONK, // honk
+    START, // start
+    END, // end
 };
 
 #endif 

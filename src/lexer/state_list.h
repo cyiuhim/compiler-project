@@ -114,7 +114,9 @@ inline std::vector<std::pair<State*, TokenType>> goose_state_map = {
 
 inline std::vector<std::pair<std::string, TokenType>> goose_keywords = {
     {"flap", FLAP},
-    {"honk", HONK}
+    {"honk", HONK},
+    {"start", START},
+    {"end", END}
 };
 
 #endif 

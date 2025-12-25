@@ -12,7 +12,7 @@ public:
     DFA();
     void parse (std::string file_name);
     void process_identifiers();
-    void remove_spaces();
+    void remove_spaces_and_comments();
     std::vector<std::pair<TokenType, std::string>> get_result();
 
 private:

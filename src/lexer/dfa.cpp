@@ -66,7 +66,7 @@ void DFA::parse(std::string file_name) {
     }
     tokens.emplace_back(_EOF, "");
     process_identifiers();
-    remove_spaces();
+    remove_spaces_and_comments();
 }
 
 void DFA::process_identifiers() {
@@ -80,10 +80,11 @@ void DFA::process_identifiers() {
     }
 }
 
-void DFA::remove_spaces() {
+void DFA::remove_spaces_and_comments() {
     std::vector<std::pair<TokenType, std::string>> new_tokens;
     for (const auto& token : tokens) {
         if (token.first == SPACES) continue;
+        if (token.first == COMMENT) continue;
         new_tokens.push_back(token);
     }
     tokens = std::move(new_tokens);
