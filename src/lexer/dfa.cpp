@@ -2,35 +2,67 @@
 #include "state_list.h"
 #include <stdexcept>
 #include <format>
+#include <fstream>
+
+struct CharInfo {
+    int line_no;
+    int char_no;
+    char c;
+};
+
+struct BacktrackInfo {
+    std::string last_token;
+    size_t last_idx;
+    State* last_state;
+};
 
 // implements maximal munch algorithm, converts text into tokens
-// TODO: implement location for each character in the text, for debugging purposes
-void DFA::parse(std::string text) {
+
+void DFA::parse(std::string file_name) {
+    std::ifstream in {file_name};
+    if (in.fail()) {
+        throw std::runtime_error("File doesn't exist");
+    }
+    std::vector<CharInfo> text;
+    std::string line;
+    int line_cnt = 1;
+    while (std::getline(in, line)) {
+        int char_no = 1;
+        for (char c : line) {
+            text.push_back({line_cnt, char_no, c});
+            char_no++;
+        }
+        text.push_back({line_cnt, char_no, '\n'});
+        line_cnt++;
+    }
     tokens.clear();
     tokens.emplace_back(SOF, "");
     size_t idx = 0;
 
-    while (idx < text.length()) {
+    while (idx < text.size()) {
         State* cur_state = start_state;
         const size_t start_idx = idx;
-        std::pair<size_t, State*> backtrack = {-1, nullptr};
-        while (idx < text.length()) {
-            if (accepting_states.contains(cur_state)) {
-                backtrack = {idx, cur_state};
-            }
+        BacktrackInfo backtrack = {"", (size_t) (-1), nullptr};
+        std::string cur_token;
+        while (idx < text.size()) {
             if (!cur_state) break;
-            if (cur_state != &comment_state && alphabet.find(text[idx]) == alphabet.end()) {
-                throw std::runtime_error(std::format("invalid character: '{}'", text[idx]));
-            }       
-            State* next_state = cur_state->get_next_state(text[idx]);
-            cur_state = next_state;
+            if (cur_state != &comment_state && cur_state != &double_quote_state && alphabet.find(text[idx].c) == alphabet.end()) {
+                throw std::runtime_error(std::format("invalid character: '{}' at line {} char {}", text[idx].c, text[idx].line_no, text[idx].char_no));
+            }
+            cur_state = cur_state->get_next_state(text[idx].c);
+            cur_token += text[idx].c;
+            if (accepting_states.find(cur_state) != accepting_states.end()) {
+                backtrack = {cur_token, idx + 1, cur_state};
+            }
             idx++;
-        } 
-        if (!backtrack.second) {
-            throw std::runtime_error("error parsing somewhere.");
         }
-        TokenType token_type = accepting_states.at(cur_state);
-        tokens.emplace_back(token_type, text.substr(start_idx, idx - start_idx));
+        // edit cur token to go back to last backtracked state
+        if (!backtrack.last_state) {
+            throw std::runtime_error(std::format("error parsing at line {} char {} with current token {}", text[idx].line_no, text[idx].char_no, cur_token));
+        }
+        TokenType token_type = accepting_states.at(backtrack.last_state);
+        tokens.emplace_back(token_type, cur_token.substr(0, backtrack.last_idx - start_idx));
+        idx = backtrack.last_idx;
     }
     tokens.emplace_back(_EOF, "");
     process_identifiers();
@@ -87,7 +119,7 @@ void DFA::add_keywords(std::vector<std::pair<std::string, TokenType>> keywords) 
     }
 }
 
-DFA::DFA() : start_state{nullptr} {
+DFA::DFA() : start_state{&empty_state} {
     populate_state_list();
     populate_alphabet(goose_alphabet);
     add_accepting_states(goose_state_map);

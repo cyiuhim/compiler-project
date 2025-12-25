@@ -10,7 +10,7 @@
 class DFA {
 public: 
     DFA();
-    void parse (std::string text);
+    void parse (std::string file_name);
     void process_identifiers();
     void remove_spaces();
     std::vector<std::pair<TokenType, std::string>> get_result();

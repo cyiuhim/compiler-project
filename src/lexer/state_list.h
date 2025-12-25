@@ -21,6 +21,9 @@ inline State hash_state;
 inline State comment_state;
 inline State newline_state;
 inline State space_state;
+inline State double_quote_state;
+inline State quote_end_state;
+inline State comma_state;
 
 struct Transition {
     State* begin_state;
@@ -76,6 +79,18 @@ inline Transition transitions[] = {
     }},
     {&empty_state, &period_state, [](char c) -> bool {
         return c == '.';
+    }},
+    {&empty_state, &double_quote_state, [](char c) -> bool {
+        return c == '\"';
+    }},
+    {&double_quote_state, &double_quote_state, [](char c) -> bool {
+        return c != '\n' && c != '\"';
+    }},
+    {&double_quote_state, &quote_end_state, [](char c) -> bool {
+        return c == '\"';
+    }},
+    {&empty_state, &comma_state, [](char c) -> bool {
+        return c == ',';
     }}
 };
 
@@ -92,7 +107,9 @@ inline std::vector<std::pair<State*, TokenType>> goose_state_map = {
     {&identifier_state, IDENTIFIER},
     {&number_state, NUMBER},
     {&at_state, FUNC_AT}, 
-    {&period_state, PERIOD}
+    {&period_state, PERIOD},
+    {&quote_end_state, QUOTE},
+    {&comma_state, COMMA}
 };
 
 inline std::vector<std::pair<std::string, TokenType>> goose_keywords = {

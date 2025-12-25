@@ -16,20 +16,9 @@ int main(int argc, char* argv[]) {
         std::cerr << "Invalid file name provided" << std::endl;
         return 1;
     }
-    std::ifstream in {file_name};
-    if (in.fail()) {
-        std::cerr << "File doesn't exist" << std::endl;
-        return 2;
-    }
-    std::string text;
-    std::string line;
-    while (in >> line) {
-        text += line;
-        text += '\n';
-    }
     DFA dfa;
     try {
-        dfa.parse(text);
+        dfa.parse(file_name);
     }
     catch (std::runtime_error& e) {
         std::cerr << e.what() << std::endl;
@@ -37,4 +26,5 @@ int main(int argc, char* argv[]) {
     }
     auto tokens = dfa.get_result();
     
+    return 0;
 }
