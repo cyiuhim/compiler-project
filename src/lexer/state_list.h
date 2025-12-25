@@ -1,18 +1,100 @@
 #ifndef __STATE_LIST_H__
 #define __STATE_LIST_H__
 
+#include <cctype>
+#include <string>
+
 #include "state.h"
+#include "token.h"
 
-extern State empty_state;
-extern State langle_state;
-extern State langle2_state; 
-extern State rangle_state;
-extern State rangle2_state;
-extern State equal_state;
-extern State period_state;
-extern State identifier_state;
-extern State at_state;
+inline State empty_state;
+inline State langle_state;
+inline State langle2_state; 
+inline State rangle_state;
+inline State rangle2_state;
+inline State equal_state;
+inline State period_state;
+inline State identifier_state;
+inline State at_state;
+inline State number_state;
+inline State hash_state;
+inline State comment_state;
+inline State newline_state;
+inline State space_state;
 
+struct Transition {
+    State* begin_state;
+    State* end_state;
+    std::function<bool(char)> condition;    
+};
 
+inline Transition transitions[] = {
+    {&empty_state, &hash_state, [](char c) -> bool {
+        return c == '#';
+    }},
+    {&hash_state, &comment_state, [](char c) -> bool {
+        return c == '#';
+    }},
+    {&comment_state, &comment_state, [](char c) -> bool {
+        return c != '\n';
+    }},
+    {&empty_state, &langle_state, [](char c) -> bool {
+        return c == '<';
+    }},
+    {&langle_state, &langle2_state, [](char c) -> bool {
+        return c == '<';
+    }},
+    {&empty_state, &rangle_state, [](char c) -> bool {
+        return c == '>';
+    }},
+    {&rangle_state, &rangle2_state, [](char c) -> bool {
+        return c == '>';
+    }},
+    {&empty_state, &equal_state, [](char c) -> bool {
+        return c == '=';
+    }},
+    {&empty_state, &space_state, [](char c) -> bool {
+        return c == ' ';
+    }},
+    {&empty_state, &identifier_state, [](char c) -> bool {
+        return isalpha(c) || c == '_';
+    }},
+    {&identifier_state, &identifier_state, [](char c) -> bool {
+        return isalnum(c) || c == '_';
+    }},
+    {&empty_state, &number_state, [](char c) -> bool {
+        return isdigit(c);
+    }},
+    {&number_state, &number_state, [](char c) -> bool {
+        return isdigit(c);
+    }},
+    {&empty_state, &at_state, [](char c) -> bool {
+        return c == '@';
+    }},
+    {&empty_state, &period_state, [](char c) -> bool {
+        return c == '.';
+    }}
+};
+
+void populate_state_list();
+
+inline std::string goose_alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_#<>.@= \n";
+
+inline std::vector<std::pair<State*, TokenType>> goose_state_map = {
+    {&comment_state, COMMENT},
+    {&langle2_state, PARAM_OPEN_PARAN},
+    {&rangle2_state, PARAM_CLOSE_PARAN},
+    {&equal_state, ASSIGN},
+    {&space_state, SPACES},
+    {&identifier_state, IDENTIFIER},
+    {&number_state, NUMBER},
+    {&at_state, FUNC_AT}, 
+    {&period_state, PERIOD}
+};
+
+inline std::vector<std::pair<std::string, TokenType>> goose_keywords = {
+    {"flap", FLAP},
+    {"honk", HONK}
+};
 
 #endif 

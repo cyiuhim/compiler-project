@@ -3,6 +3,7 @@
 #include <string>
 
 #include <dfa.h>
+#include <state_list.h>
 
 int main(int argc, char* argv[]) {
     // usage: goose basic.goose
@@ -27,5 +28,5 @@ int main(int argc, char* argv[]) {
         text += '\n';
     }
     DFA dfa;
-    auto tokens = dfa.parse(text);
+    dfa.parse(text);
 }

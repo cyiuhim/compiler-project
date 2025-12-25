@@ -14,7 +14,8 @@ public:
     TrieNode();
     // destructor 
     ~TrieNode();
-    void add_word(std::string word, TokenType token); 
+    void add_word(std::string word, TokenType token);
+    std::optional<TokenType> check_word(std::string word);
 
 private:
     std::vector<TrieNode*> children;

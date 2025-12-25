@@ -23,3 +23,13 @@ void TrieNode::add_word(std::string word, TokenType token) {
     }
     children[first_char - 'a']->add_word(word.substr(1), token);
 }
+
+std::optional<TokenType> TrieNode::check_word(std::string word) {
+    if (word.empty()) {
+        return end_token;
+    }
+    if (!children.at(word[0] - 'a')) {
+        return std::nullopt;
+    }
+    return children.at(word[0] - 'a')->check_word(word.substr(1));
+}
