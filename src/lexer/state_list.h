@@ -54,7 +54,10 @@ inline Transition transitions[] = {
         return c == '=';
     }},
     {&empty_state, &space_state, [](char c) -> bool {
-        return c == ' ';
+        return c == ' ' || c == '\n' || c == '\r' || c == '\t';
+    }},
+    {&space_state, &space_state, [](char c) -> bool {
+        return c == ' ' || c == '\n' || c == '\r' || c == '\t';
     }},
     {&empty_state, &identifier_state, [](char c) -> bool {
         return isalpha(c) || c == '_';
@@ -78,7 +81,7 @@ inline Transition transitions[] = {
 
 void populate_state_list();
 
-inline std::string goose_alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_#<>.@= \n";
+inline std::string goose_alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_#<>.,@= \n\t\r'\"";
 
 inline std::vector<std::pair<State*, TokenType>> goose_state_map = {
     {&comment_state, COMMENT},

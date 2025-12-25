@@ -4,15 +4,12 @@
 #include <format>
 
 // implements maximal munch algorithm, converts text into tokens
+// TODO: implement location for each character in the text, for debugging purposes
 void DFA::parse(std::string text) {
-    // TODO: implement maximal munch algorithm 
+    tokens.clear();
+    tokens.emplace_back(SOF, "");
     size_t idx = 0;
-    // check for invalid characters first 
-    for (char c : text) {
-        if (alphabet.find(c) == alphabet.end()) {
-            throw std::runtime_error(std::format("Invalid character: '{}'", c));
-        }
-    }
+
     while (idx < text.length()) {
         State* cur_state = start_state;
         const size_t start_idx = idx;
@@ -21,8 +18,11 @@ void DFA::parse(std::string text) {
             if (accepting_states.contains(cur_state)) {
                 backtrack = {idx, cur_state};
             }
+            if (!cur_state) break;
+            if (cur_state != &comment_state && alphabet.find(text[idx]) == alphabet.end()) {
+                throw std::runtime_error(std::format("invalid character: '{}'", text[idx]));
+            }       
             State* next_state = cur_state->get_next_state(text[idx]);
-            if (!next_state) break;
             cur_state = next_state;
             idx++;
         } 
@@ -32,7 +32,9 @@ void DFA::parse(std::string text) {
         TokenType token_type = accepting_states.at(cur_state);
         tokens.emplace_back(token_type, text.substr(start_idx, idx - start_idx));
     }
+    tokens.emplace_back(_EOF, "");
     process_identifiers();
+    remove_spaces();
 }
 
 void DFA::process_identifiers() {
@@ -44,6 +46,15 @@ void DFA::process_identifiers() {
             }
         }
     }
+}
+
+void DFA::remove_spaces() {
+    std::vector<std::pair<TokenType, std::string>> new_tokens;
+    for (const auto& token : tokens) {
+        if (token.first == SPACES) continue;
+        new_tokens.push_back(token);
+    }
+    tokens = std::move(new_tokens);
 }
 
 std::vector<std::pair<TokenType, std::string>> DFA::get_result() {
