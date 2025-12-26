@@ -11,11 +11,11 @@ class DFA {
 public: 
     DFA();
     void parse (std::string file_name);
-    void process_identifiers();
-    void remove_spaces_and_comments();
     std::vector<std::pair<TokenType, std::string>> get_result();
 
 private:
+    void process_identifiers();
+    void remove_spaces_and_comments();
     void populate_alphabet(std::string valid_chars);
     void set_start_state(State* state);
     void add_state(State* state);
